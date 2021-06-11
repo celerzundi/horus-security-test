@@ -70,6 +70,66 @@ function HorusOauthSecurityStrategy(expressServer, options) {
 
   });
 
+  expressServer.get('/horus/public/login', function (req, res) {
+    if(options.enablePublicLogin === true){
+      logger.info("HorusOauthSecurity public login enabled")
+      var requestId = getRequestId(req);
+
+      var params = {
+        "grantType": options.publicLoginGrantType,
+        "clientId": "",
+        "authorizationCode": "",
+        "genericKey": options.publicLoginGenericKey,
+        "subject": options.publicLoginGenericSubject,
+        "applicationId": options.horusOptions.authenticate.applicationId
+      }
+
+      horusRestClient.authenticate(params, requestId, function (horusAuthError, horusAuthResponse) {
+        if (horusAuthError) {
+          logger.error("Error in auth transaction: " + horusAuthError);
+          res.redirect(options.express.failureRedirectRoute);
+          return;
+        }
+        if (options.overrideResponse === true && options.defaultBussinessUnit) {
+          logger.info("Modifying default response");
+          var businessUnit = horusAuthResponse.businessUnits.find(bu => bu.identifier === options.defaultBussinessUnit);
+  
+          businessUnit.profiles.forEach(profile => {
+            profile.options = mapMenuReferences(profile.options, options)
+          })
+        } else {
+          logger.info("default response will be returned");
+        }
+  
+        req.session.tokenInformation = {};
+  
+        req.session.tokenInformation.acquisitionTime = new Date().getTime();
+        req.session.tokenInformation.refreshTokenV1 = horusAuthResponse.refreshTokenV1;
+        req.session.tokenInformation.refreshTokenV2 = horusAuthResponse.refreshTokenV2;
+  
+        //delete unnecesary values
+        delete horusAuthResponse.refreshTokenV1;
+        delete horusAuthResponse.refreshTokenV2;
+  
+        req.session.connectedUserInformation = horusAuthResponse;
+        req.session.save();
+  
+        if (req.session.originalUrl) {
+          res.redirect(req.session.originalUrl);
+        } else {
+          res.redirect(options.express.defaultSuccessLoginRoute);
+        }
+  
+        return;
+      });
+
+
+    } else {
+      logger.error("HorusOauthSecurity Public login is disabled")
+      res.redirect("/");
+    }
+  })
+
   this.ensureAuthenticated = function (req, res, next) {
 
     logger.debug("ensure if user is authenticated:" + req.path);
