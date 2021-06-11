@@ -98,8 +98,10 @@ function HorusOauthSecurityStrategy(expressServer, options) {
             profile.options = mapMenuReferences(profile.options, options)
           })
         } else {
-          logger.info("default response will be returned");
+          logger.info("public login default response will be returned");
         }
+
+        console.log(horusAuthResponse)
   
         req.session.tokenInformation = {};
   
