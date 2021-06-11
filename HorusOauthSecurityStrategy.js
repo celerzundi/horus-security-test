@@ -101,8 +101,6 @@ function HorusOauthSecurityStrategy(expressServer, options) {
           logger.info("public login default response will be returned");
         }
 
-        console.log(horusAuthResponse)
-  
         req.session.tokenInformation = {};
   
         req.session.tokenInformation.acquisitionTime = new Date().getTime();
@@ -114,6 +112,7 @@ function HorusOauthSecurityStrategy(expressServer, options) {
         delete horusAuthResponse.refreshTokenV2;
   
         req.session.connectedUserInformation = horusAuthResponse;
+        req.session.signinStarted = true;
         req.session.save();
   
         if (req.session.originalUrl) {
