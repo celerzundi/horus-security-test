@@ -112,8 +112,13 @@ function HorusOauthSecurityStrategy(expressServer, options) {
         delete horusAuthResponse.refreshTokenV2;
   
         req.session.connectedUserInformation = horusAuthResponse;
-        console.log(req.session.publicUserInformation)
+        
+        // injectando valores del public login (tokenV1 y datos básicos)
         req.session.connectedUserInformation.tokenV1 = req.session.publicUserInformation.tokenV1;
+        req.session.connectedUserInformation.email = req.session.publicUserInformation.email;
+        req.session.connectedUserInformation.firtName = req.session.publicUserInformation.name;
+        req.session.connectedUserInformation.lastName = req.session.publicUserInformation.lastname;
+
         req.session.signinStarted = true;
         req.session.save();
   
