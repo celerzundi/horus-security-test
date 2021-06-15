@@ -112,6 +112,8 @@ function HorusOauthSecurityStrategy(expressServer, options) {
         delete horusAuthResponse.refreshTokenV2;
   
         req.session.connectedUserInformation = horusAuthResponse;
+        console.log(req.session.publicUserInformation)
+        req.session.connectedUserInformation.tokenV1 = req.session.publicUserInformation.tokenV1;
         req.session.signinStarted = true;
         req.session.save();
   
